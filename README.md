@@ -7,91 +7,125 @@ Setup ORM & Skema Database untuk sistem ini pada dasarnya adalah **membuat fonda
 
 ### 1. Skema Database
 1. User
-Tabel ini berfungsi sebagai data seluruh identitas anggota/pegawai berkominukasi dengan system
+
+Tabel ini berfungsi sebagai data autentikasi dasar anggota/pegawai berkominukasi dengan system
 
    - id (primary key) (Bigint) - ID unik sebagai kunci utama pengguna.
    - name (Varchar) - Nama Lengkap Pengguna
    - email (Varchar, optional) - Alamat email pengguna
    - password (varchar) - Kata sandi penggua
-   - role (Enum: admin, manager atau pegawai) - Peran pengguna dalam sistem
-   - department_id (Bigint, Foreign Key): Menghubungkan pegawai ke departemen tempat ia bekerja (mengacu pada id_depart).
    - created_at TIMESTAMP - Waktu saat akun pengguna dibuat.
    - updated_at TIMESTAMP - Waktu saat data pengguna terakhir diubah.
 
-3. task_schedules 
+2. Team
+  
+Tabel team Berfungsi wadah Utama organisasi atau komunitas
+
+   - id (Bigint, Primary key) - Identitas unik setiap entitas tim/organisasi.
+   - name (Varchar) - Nama resmi Tim 
+   - type (Enum: personal, company, community, other)
+   - created_at (TIMESTAMP) - Waktu saat team dibuat
+   - updated_at (TIMESTAMP) - Waktu saat team terakhir diubah.
+
+3. Team_member
+
+Tabel team_member berfungs sebagai hubungan antar user dan team. Di tabel ini menyimpan data spesifik user khusus untuk tim tersebut
+
+   - id (Bigint, Primary key) - Identitas unik setiap member
+   - team_id (Bigint, FK) = Menunjuk anggota ini masuk ke tim yang mana.
+   - user_id (Bigint, FK) - Menunjuk anggota ini pemilik akun login yang mana.
+   - name (Varchar) - Nama lengkap orang tersebut di tim
+   - phone_number (Varchar, Optional) 
+   - role (Enum: owner, admin, manager, member)
+   - status (Enum: trial, active, expired, cancelled) - Status member
+   - trial (Timestamp, Nullable) — Menyimpan sisa masa percobaan (trial) member
+   - created_at (TIMESTAMP) - Waktu saat masuk tim
+   - updated_at (TIMESTAMP) - Waktu terakhir diubah saat masuk tim 
+
+4. activity
+   
 Tabel ini berfungsi sebagai data tugas tugas dengan format yang di tentukan supaya bisa mengatur tugas tugas secara otomatis, rutin atau berkala.
 
    - id (primary key) (Bigint) - ID unik untuk setiap jadwal tugas.
    - task_name (Varchar) - Judul atau nama tugas yang harus dikerjakan.
+   - team_id (foregin key) (Bigint) 
+   - parent_id (Bigint, Foreign Key - activity.id, Nullable) — Mendukung Sub-Activity
    - created_by (Bigint, Foreign Key): ID pengguna yang memegang tanggung jawab atas tugas tersebut (mengacu pada id_user).
    - category (Enum) - Kategori tugas (administrasi, laporan, meeting, operasional, lainnya).
    - description (Text, Optional): Penjelasan detail mengenai petunjuk pengerjaan tugas.
    - priority (Enum) - Tingkat urgensi tugas (contoh: Urgent, High, Medium, Low).
-   - frekuency (Enum) - Frekuensi pengulangan tugas (contoh: Once, Daily, Weekly, Monthly).
-   - target (Int) - Target hari yang harus dicapai dalam tugas.
+   - frequency (Enum) - Frekuensi pengulangan tugas (contoh: Once, Daily, Weekly, Monthly).
+   - target_type (Enum: boolean, numeric, Default: boolean) — Penanda tipe target
+   - target_value (Int, Default: 1) — Nilai target yang harus dicapai
    - due_time (Time) - Deadline tugas
    - is_active (Boolean) - Status aktifnya jadwal tugas
    - created_at TIMESTAMP - Waktu jadwal tugas dibuat.
    - updated_at TIMESTAMP - Waktu jadwal tugas terakhir diperbarui.
 
 5. task_logs
+   
 Tabel berfungsi sebagai rekam jejak (checklist) eksekusi dan bukti pengerjaan tugas secara real-time. Setiap kali tugas dikerjakan, catatan barunya masuk ke sini.
 
    - id (primary key) (Bigint) - ID unik untuk setiap jadwal tugas.
-   - task_schedule_id (Bigint, Foreign Key) - Mengacu pada ID jadwal tugas utama yang sedang dilaporkan.
+   - activity_id (Bigint, Foreign Key) - Mengacu pada ID jadwal tugas utama yang sedang dilaporkan.
    - user_id (Bigint, Foreign Key) - Mengacu pada ID pegawai yang mengisi laporan pengerjaan.
+   - team_id (Bigint, Foreign Key - teams.id)
    - scheduled_date (Date) - Tanggal tugas tersebut seharusnya dikerjakan.
    - status (Enum) - Status hasil pengerjaan (contoh: Pending, Submitted, Approved, Rejected).
+   - Progress_value (int)
    - submitted_at TIMESTAMP - Waktu presisi saat pegawai mengunggah/mengirimkan laporan.
    - file (Varchar) - Bukti pengerjaan tugas
    - notes (Text, Optional) - Catatan tambahan atau kendala dari pegawai saat mengerjakan tugas.
    - created_at TIMESTAMP - Waktu catatan log ini dibuat oleh sistem.
    - updated_at TIMESTAMP - Waktu catatan log ini terakhir diubah.
 
-6. departemnt
-Tabel ini digunakan untuk menyimpan data divisi atau departemen tempat pegawai bekerja.
-
-  - id (primary key) (Bigint) - ID unik sebagai kunci utama departemen.
-  - code_depart (char, unique) - Kode singkat departemen.
-  - name (varchar) - Nama lengkap departemen.
-  - deskription (text) - Penjelasan deskripsi fungsi departemen.
-  - created_at TIMESTAMP - Waktu saat data departemen dibuat.
-  - updated_at TIMESTAMP - Waktu saat data departemen terakhir diubah.
-
 relasi nya 
 
-1. user - task_schedules (one to many)
-  - setiap user dapat mempunyai satu atau banyaknya task_schedules
-  - setiap task_schedules harus dipunyai satu hanya satu user
+1. user - activity 
+  - setiap user dapat mempunyai satu atau banyaknya activity
+  - setiap activity harus dipunyai satu hanya satu user
 
-2. user - dapartement ( one to many )
-  - setiap departement harus memiliki satu atau banyaknya user
-  - setiap user harus dimiliki satu dan hanya satu department
+2. user - tim_member 
+  - setiap tim_member harus memiliki satu atau banyaknya user
+  - setiap user harus dimiliki satu dan hanya satu tim_member
 
-3. task_schedules - task_log 
-  - setiap teks_schedule harus menghasilkan satu atau banyaknya task_log
-  - setiap task_log harus dihasilkan satu dan hanya satu task_schedule
-
-4. task_log - user
+3. task_log - user
   - setiap user harus mencatat satu atau banyaknya task_log
   - setiap task_log harus dicatat satu dan hanya satu user
+  
+4. activity - task_log 
+  - setiap activity  harus menghasilkan satu atau banyaknya task_log
+  - setiap task_log harus dihasilkan satu dan hanya satu activity 
 
+5. tim - activity 
+  - setiap tim dapat memiliki satu atau banyaknya activity
+  - setiap activity harus dimiliki satu dan hanya satu tim
+
+6. tim - tim_member
+  - setiap tim harus memiliki satu atau banyaknya tim_member
+  - setiap tim_member dimiliki satu dan hanya satu tim
+
+7. tim - task_log
+  - setiap tim harus memuat satu atau banyaknya task_log
+  - setiap task_log harus dimuat satu dan hanya satu tim
+  
 Perancangan ERD nya sebagai berikut 
 
-<img width="1391" height="653" alt="Logical" src="https://github.com/user-attachments/assets/03ee9ae3-d0a7-45f1-b0a4-4ea4d0cfe75f" />
+<img width="767" height="424" alt="Logic222al" src="https://github.com/user-attachments/assets/73d909cb-7107-4b4b-a2b9-02abfe8a004e" />
 
 ### 2. Buat database baru di laragon MySQL
 
 Ketika sudah merancang skema database dengan erd maka kita bikin tablenya di laragon MySQL
-<img width="1613" height="968" alt="image" src="https://github.com/user-attachments/assets/611a6159-dd87-44c4-bb92-fb251a7dff37" />
 
-<img width="1617" height="903" alt="image" src="https://github.com/user-attachments/assets/b0a794ff-37a7-420b-b302-1da1dc352a80" />
+<img width="1623" height="802" alt="image" src="https://github.com/user-attachments/assets/fe6e192d-7028-4e1d-a0af-c5835f88f819" />
 
-<img width="1592" height="786" alt="image" src="https://github.com/user-attachments/assets/64167471-86e8-4e69-b644-fea96052094e" />
+<img width="1592" height="615" alt="image" src="https://github.com/user-attachments/assets/507234b9-1202-4e24-adac-2ba9aebee7d0" />
 
-<img width="1587" height="937" alt="image" src="https://github.com/user-attachments/assets/3d5c7c69-5110-4699-ada2-66e504dae030" />
+<img width="1617" height="392" alt="image" src="https://github.com/user-attachments/assets/68d5055a-a522-4077-8c20-88554f764f3d" />
 
-<img width="1592" height="587" alt="image" src="https://github.com/user-attachments/assets/a0385f1e-30c3-4042-a6f8-0452d04d14db" />
+<img width="1618" height="582" alt="image" src="https://github.com/user-attachments/assets/724db1dc-2aa5-4f46-8fce-830e69ca021a" />
+
+<img width="1627" height="395" alt="image" src="https://github.com/user-attachments/assets/19e1f238-7553-4710-adc2-be5e8496e5bf" />
 
 ### 3. Inisialisasi Project
 
