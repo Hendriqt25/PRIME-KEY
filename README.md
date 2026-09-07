@@ -151,5 +151,126 @@ Langkah ini digunakan untuk memasang "alat-alat bantu" (package/library) yang di
 
 Tahap ini database MySQL di Laragon sudah saling terhubung
 
+### 6. Alur Panel
+
+1. Autentikasi Akun
+
+	a. Akses Awal & Pilihan Jalur:
+
+      User membuka aplikasi dan memilih antara masuk (Login) jika sudah punya akun, atau daftar (Register) jika belum.
+   
+   b. Alur Login
+   
+      User mengisikan Email dan Password.
+   
+      	Jika data benar: Akun berhasil masuk dan user langsung diarahkan ke Dashboard.
+   
+      	Jika data salah: Sistem menampilkan notifikasi Email/Password Salahdan mengembalikan user ke halaman Login.
+   
+   c. Alur Register (User Baru):
+   
+      User mengisikan Nama, Email, Password, dan Konfirmasi Password. Sistem melakukan validasi data:
+   
+      	Jika Email sudah ada: Muncul notifikasi Sudah Terdaftar dan user diarahkan ke halaman Login.
+      	Jika Konfirmasi Password beda: Muncul notifikasi Password Tidak Sesuai dan user diminta mengulang di halaman Register.
+      	Jika Semua Data Sesuai: Akun berhasil dibuat dan user diarahkan ke halaman Login untuk masuk ke sistem.
+
+. Dashboard Umum
+
+Begitu user masuk (setelah login), sistem mengecek apakah user sudah punya tim atau belum.
+
+ a. Jika User Sudah Punya Tim
+ 
+      Sistem membaca role user di database.
+      Jika Admin: Diarahkan langsung ke Dashboard Admin.
+      Jika Member: Diarahkan langsung ke Dashboard Member.
+      
+b. Jika User Belum Punya Tim (Masuk Halaman Onboarding)
+
+User diberi 2 pilihan: Membuat Tim Baru atau Bergabung ke Tim (Pakai Kode).
+
+	1. Kondisi B1 — Jalur Membuat Tim Baru (Bikin Workspace):
+	User mengisi nama & tipe tim kemudian memilih paket langganan, setelah itu melakukan pembayaran (Payment Gateway).
+	Jika pembayaran gagal: Muncul notifikasi gagal dan user diminta mengulang pembayaran.
+	Jika pembayaran berhasil: Sistem menyimpan data tim, menetapkan user tersebut otomatis menjadi Admin/Owner, lalu mengarahkannya ke halaman utama/dashboard.
+   
+	2. Kondisi B2 — Jalur Bergabung ke Tim (Sebagai Member):
+	User memasukkan Kode Undangan Tim.
+	Jika kode salah/tidak valid: Muncul notifikasi kode tidak ditemukan.
+	Jika kode valid: User memilih paket member/trial habis itu proses verifikasi/pembayaran dan sistem menyimpan data user sebagai Member di tim tersebut maka user masuk ke dashboard.
+
+c. Navigasi panel Member
+
+Member memilih salah satu dari 6 menu utama di dashboard:
+
+1. Menu 1 Dashboard Utama: Memuat ringkasan ringkasan statistik dan daftar tugas mendatang.
+   
+2. Menu 2 Daftar Tugas (Task List):
+
+Tampilkan list tugas hari ini dan pilih tugas.
+
+      Jika status Submitted/Approved: Hanya bisa melihat detail dan bukti yang sudah terkirim.
+      Jika status Pending/Rejected: Buka form pengisian isi data & upload bukti klik kirim.
+      Validasi: Jika data belum lengkap, muncul peringatan. Jika lengkap, sistem mengalokasikan pembaruan ke task_logs dan menampilkan notifikasi sukses.
+	
+3. Menu 3 Riwayat Laporan:
+Tampilkan tabel log laporan dan pilih satu laporan.
+
+         Status Approved: Lihat bukti, progress, dan tanggal disetujui.
+      	Status Rejected: Lihat catatan evaluasi / alasan penolakan dari admin.
+      	Status Submitted: Menampilkan keterangan laporan sedang menunggu peninjauan.
+
+5. Menu 4 Rekap Kepatuhan Saya: Memuat data dari activity & task_logs untuk menampilkan grafik statistik kepatuhan pribadi secara real-time.
+   
+6. Menu 5 Profil & Info Tim: Mengarahkan alur ke halaman Profil & Info Tim dan bisa mengupdate profile member.
+   
+7. Menu 6 Keluar (Logout): Mengakhiri sesi pengguna dan melempar kembali ke Halaman Login.
+
+d. Navigasi Panel Admin
+
+Admin memilih salah satu dari 6 menu utama di dashboard: 
+
+1. Menu 1 Dashboard Eksekutif:
+   
+Sistem membaca data teams, team_members, dan task_logs.
+
+Menampilkan widget ringkasan statistik (total anggota, status langganan, dan tingkat kepatuhan tim).
+
+2. Menu 2 Kelola Anggota:
+   
+Sistem menampilkan daftar team_members.
+
+	Opsi Undang Member: Generate & kirim kode undangan tim, kode siap digunakan.
+	Opsi Hapus Member: Konfirmasi hapus, jika Ya, sistem memperbarui/menghapus data member dari database berhasil dihapus.
+   
+3. Menu 3 Master Activity & Review:
+	
+         Sub-Opsi 1 (CRUD Template Tugas): Admin membuat, mengedit, atau menghapus Master Activity, sistem memperbarui tabel activity.
+      	Sub-Opsi 2 (Review & Approval Laporan): Admin melihat antrean task_logs terkirim.
+      	Disetujui: Update status task_logs menjadi disetujui dan notifikasi laporan berhasil disetujui.
+      	Ditolak: Admin mengisi catatan evaluasi/alasan penolakan dan update status task_logs.
+
+4. Menu 4 Langganan & Billing:
+
+Sistem memuat data paket aktif & riwayat pembayaran.
+
+	Aksi Upgrade/Perpanjang: Pilih paket terus proses payment gateway, jika sukses, update status langganan tim. Jika gagal, muncul notifikasi pembayaran gagal.
+	Aksi Unduh Invoice: Generate & unduh berkas PDF bukti pembayaran/faktur.
+
+5. Menu 5 Laporan & Rekap Tahunan:
+   
+Admin memilih periode & tahun laporan.
+
+	Sistem mengagregasi data kepatuhan tim, menampilkan diagram kinerja tim dan individu.
+	Export: Admin dapat mengunduh berkas rekap kepatuhan format PDF.
+   
+6. Menu 6 Keluar (Logout):
+
+Mengakhiri sesi pengguna Admin dan mengarahkan kembali ke Halaman Login.
+
+
+
+
+
 
 
